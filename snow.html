@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>snow</title>
+
+</head>
+<body style="background-color:#000;margin:0;">
+    <script>
+        
+        var Christmas = function(){
+
+            var canvas, ctx, img, tt, st;
+            var snows = [];
+
+            var createSnow = function(sx, sy, width, height, x, a, vx, vy, dw, dh){
+                return {
+                    scaleX : sx, //偏移坐标
+                    scaleY : sy,
+                    sWidth : width, // 截图大小
+                    sHeight: height,
+                    posX   : x, //雪花初始位置
+                    posY   : 0,
+                    a      : a,
+                    vx     : vx,
+                    vy     : vy,
+                    dWidth : dw,
+                    dHeight: dh
+                }
+            }
+            var init = function(){
+
+                canvas = document.createElement('canvas');
+
+                canvas.id = 'Christmas';
+                canvas.width = document.body.clientWidth;
+                canvas.height = 300//document.body.clientHeight;// || document.documentElement.clientHeight;
+
+                document.body.appendChild(canvas);
+                var can = document.getElementById('Christmas');
+                can.style.position = 'absolute';
+                can.style.left = 0;
+                can.style.top = 0;
+                can.style.zIndex = -1;
+
+                if (can.getContext('2d')) {
+                    ctx = can.getContext('2d');
+
+                    img = new Image();
+                    img.src = 'http://gbspacing.com/demo/Snowflakes.png';
+
+                    img.onload = function(){
+
+                        create();
+
+                        run();
+                        
+                        interval();
+                    }                    
+                }
+                else {
+                    return;
+                }
+
+            }
+
+            var draw = function(){
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (var i=0, len=snows.length; i < len; i++){
+                    var item = snows[i];
+                    ctx.save();
+
+                    if(item.posY > canvas.height)
+                        item.posY = 0;
+
+                    ctx.drawImage(img, item.scaleX, item.scaleY, item.sWidth, item.sHeight, item.posX, item.posY, item.dWidth, item.dHeight);
+
+                    item.posY += item.vy;
+
+                    item.vx += item.a;
+                    if (item.vx > 7)
+                        item.a*=-0.98;
+                    else if (item.vx < -7)
+                        item.a*=-1;
+
+                    item.posX += item.vx;
+                }
+            }
+
+            var run = function(){ //console.log(~~(Math.random()*200))
+                    draw();
+                st = setTimeout(function(){
+                    run();
+                }, 100)                
+            }
+
+            var create = function(){
+                for (var i=0; i < 4; i++){
+                    var sx,sy,width,height,x,a,dw,dh;
+                    sx = i%5*20;
+                    sy = 0;
+                    width = 20;
+                    height = 20;
+                    x = Math.random()*canvas.width;
+                    var pt = Math.random()*10;
+                    a = Math.pow(-1, ~~pt);
+                    vx = Math.random()*Math.random()*5*a;
+                    vy = 6*Math.random()+2;
+                    if (snows.length%3 ==0)
+                        dw=dh=15;
+                    else
+                        dw=dh=20;
+                    snows.push(createSnow(sx,sy,width,height,x,a,vx,vy,dw,dh))
+                }
+
+
+
+
+            }
+
+            var interval = function(){
+                create();
+
+                tt = setTimeout(function(){
+                    interval();
+                }, 500);
+                if (snows.length>160){
+                    clearTimeout(tt); 
+                    console.log(snows.length);
+                }
+            }
+
+            init();
+
+        }
+
+        Christmas();
+    </script>
+</body>
+</html>

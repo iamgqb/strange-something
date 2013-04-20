@@ -1,0 +1,138 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+    <canvas id="canvas-1" width="500" height="500" style="border:1px solid #f00"></canvas>
+     <script type="text/javascript">
+        var canvas = document.getElementById('canvas-1');
+        var ctx    = canvas.getContext('2d');
+        var balls = [];
+        var rect = {
+            x:0,    //起始X坐标
+            y:300,  //起始Y坐标
+            width:100,//宽度
+            height:10,//高度
+            a:3     //加速度
+        };
+        var rectData;
+        canvas.onclick = function(event){
+            event = event || window.event;
+            var x = event.offsetX || event.clientX - getElementViewLeft(this),
+                y = event.offsetY || event.clientY - getElementViewTop(this);           
+            balls.push({
+                centerX : x, // X coordinate
+                centerY : y, // Y coordinate
+                radius : 10, // radius
+                color : 'rgb('+Math.floor(255*Math.random())+','+Math.floor(255*Math.random())+','+Math.floor(255*Math.random())+')',
+                v : 0,
+                a : 1, //加速度
+            });
+
+        }
+
+        function loop(){            
+            move();
+            hitRect();
+            ctx.clearRect(0,0,500,500);
+            drawRect();
+            drawBall();
+            setTimeout(loop, 20);
+        }
+        setTimeout(loop, 20);
+
+        function move(){
+
+            // rect move
+            rect.x += rect.a;
+            if(rect.x+rect.width > canvas.width){
+                rect.a *= -1;
+                rect.x = canvas.width - rect.width;
+            }
+            else if(rect.x < 0){
+                rect.a *= -1;
+                rect.x = 0;
+            }
+            rect.minX = rect.x;
+            rect.minY = rect.y;
+            rect.maxX = rect.x + rect.width;
+            rect.maxY = rect.y + rect.height;
+
+            // balls move
+            for (var i in balls){
+                var part = balls[i];
+                part.v += part.a;
+                part.centerY += part.v;
+
+                part.minX = part.centerX - part.radius;
+                part.minY = part.centerY - part.radius;
+                part.maxX = part.centerX + part.radius;
+                part.maxY = part.centerY + part.radius;
+            }
+            //rectData = ctx.getImageData(rect.x, rect.y, rect.width, rect.height).data;
+        }
+        function hitRect(){
+            for (var i in balls){
+                var part = balls[i];
+                if ( !(part.maxX<rect.minX || part.maxY<rect.minY || rect.maxX<part.minX || rect.maxY<part.minY) ){                  
+                    
+                    if (part.v<0) {
+                        part.centerY = rect.maxY+part.radius;
+                    }
+                    else if (part.v>=0) {
+                        part.v+=part.a;
+                        part.centerY = rect.minY-part.radius;
+                    }
+                    part.v*=-1;
+
+                }
+                if(part.centerY + part.radius > canvas.height){
+                    part.v*=-1;
+                    part.centerY = canvas.height - part.radius;
+                }
+            }
+        }
+        function drawRect(){
+            ctx.save();
+            ctx.fillStyle = '#000';
+            ctx.translate(rect.x, rect.y);
+            ctx.fillRect(0, 0, rect.width, rect.height);
+            ctx.restore();
+        }
+        function drawBall(x, y){
+                for(var i in balls){
+                var part = balls[i];
+                ctx.fillStyle = part.color;               
+                ctx.beginPath();
+                ctx.arc(part.centerX, part.centerY, part.radius, 0, Math.PI*2, true);
+                ctx.fill();                
+            }
+        }
+
+
+        function getElementViewLeft(element){
+            var actualLeft = element.offsetLeft;
+            var current = element.offsetParent;
+            while (current !== null){
+                actualLeft += current.offsetLeft;
+                current = current.offsetParent;
+            }
+            var elementScrollLeft=document.body.scrollLeft || document.documentElement.scrollLeft; 
+            return actualLeft-elementScrollLeft;
+        }
+
+        function getElementViewTop(element){
+            var actualTop = element.offsetTop;
+            var current = element.offsetParent;
+            while (current !== null){
+                actualTop += current. offsetTop;
+                current = current.offsetParent;
+            }
+            var elementScrollTop=document.body.scrollTop || document.documentElement.scrollTop;
+            return actualTop-elementScrollTop;
+        }
+     </script>
+</body>
+</html>
